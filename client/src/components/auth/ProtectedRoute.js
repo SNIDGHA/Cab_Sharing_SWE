@@ -1,18 +1,15 @@
-// ProtectedRoute.js
-import { useAuth0 } from '@auth0/auth0-react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../AuthContext';
+import { Outlet, Navigate } from 'react-router-dom';
 
 const ProtectedRoute = () => {
-  const { isAuthenticated, isLoading } = useAuth0();
-  const navigate = useNavigate();
+  const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
   if (!isAuthenticated) {
-    navigate('/login');
-    return null;
+    return <Navigate to="/authenticate" replace />;
   }
 
   return <Outlet />;

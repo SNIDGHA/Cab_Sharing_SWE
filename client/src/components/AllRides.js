@@ -18,7 +18,7 @@ const AllRides = () => {
   useEffect(() => {
     const fetchRides = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/rides'); // Replace with your API endpoint
+        const response = await axios.get('http://localhost:3001/rides'); // Replace with your API endpoint
         setRides(response.data);
         // Simulating a delay for demonstration purposes
         setTimeout(() => {
@@ -83,3 +83,4 @@ const AllRides = () => {
 };
 
 export default AllRides;
+

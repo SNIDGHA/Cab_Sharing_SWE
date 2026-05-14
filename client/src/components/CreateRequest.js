@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 function PostForm() {
     const { id } = useParams();
-    const url = "http://localhost:3000/requests";
+    const url = "http://localhost:3001/requests";
     const [data, setData] = useState({
         yourName: "",
         yourEmail: "",
@@ -117,3 +117,4 @@ function PostForm() {
 }
 
 export default PostForm;
+

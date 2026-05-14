@@ -14,7 +14,7 @@ function AllRequests() {
             try {
                 // Simulating a delay for demonstration purposes
                 const timeout = setTimeout(() => {
-                    Axios.get("http://localhost:3000/requests")
+                    Axios.get("http://localhost:3001/requests")
                         .then(res => {
                             setRequests(res.data);
                             setLoading(false); // Set loading to false when data is fetched
@@ -49,7 +49,7 @@ function AllRequests() {
             return;
         }
 
-        Axios.delete(`http://localhost:3000/requests/${id}`)
+        Axios.delete(`http://localhost:3001/requests/${id}`)
             .then(res => {
                 console.log('Request deleted:', res.data);
                 setRequests(requests.filter(request => request._id !== id));
@@ -98,3 +98,4 @@ function AllRequests() {
 }
 
 export default AllRequests;
+

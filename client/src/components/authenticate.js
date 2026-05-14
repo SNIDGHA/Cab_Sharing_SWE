@@ -1,23 +1,32 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Authenticate = () => {
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Check session on page load
-    fetch("http://localhost:5000/session", {
+    fetch("http://localhost:3001/session", {
       credentials: "include",
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error('Not authenticated');
+        return res.json();
+      })
       .then((data) => {
-        if (data.authenticated) setUser(data.user);
+        if (data.authenticated) {
+          setUser(data.user);
+          // Redirect to profile page after authentication
+          navigate('/profile');
+        }
       })
       .catch(() => setUser(null));
-  }, []);
+  }, [navigate]);
 
   const handleLogout = async () => {
-    await fetch("http://localhost:5000/logout", {
-      method: "POST",
+    await fetch("http://localhost:3001/logout", {
+      method: "GET",
       credentials: "include",
     });
     setUser(null);
@@ -31,7 +40,7 @@ const Authenticate = () => {
           <button onClick={handleLogout}>Logout</button>
         </div>
       ) : (
-        <a href="http://localhost:5000/auth/google">Login with Google</a>
+        <a href="http://localhost:3001/auth/google">Login with Google</a>
       )}
     </div>
   );

@@ -7,7 +7,7 @@ const RidesList = () => {
   useEffect(() => {
     const fetchRides = async () => {
       try {
-        const response = await axios.get('http://localhost:3000/rides');
+        const response = await axios.get('http://localhost:3001/rides');
         setRides(response.data);
       } catch (error) {
         console.error('Error fetching rides:', error);
@@ -35,3 +35,4 @@ const RidesList = () => {
 };
 
 export default RidesList;
+

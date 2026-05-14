@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams,useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { useAuth0 } from '@auth0/auth0-react';
+import { useAuth } from '../AuthContext';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { PacmanLoader } from 'react-spinners';
@@ -11,20 +11,19 @@ const RideDetails = () => {
   const [ride, setRide] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { isAuthenticated, loginWithRedirect } = useAuth0();
+  const { isAuthenticated, login } = useAuth();
 
   useEffect(() => {
     const fetchRide = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/rides/${id}`); // Replace with your API endpoint
+        const response = await axios.get(`/rides/${id}`);
         setRide(response.data);
-        // Simulate a delay for demonstration purposes
         setTimeout(() => {
-          setLoading(false); // Set loading to false after the timeout
+          setLoading(false);
         }, 2000);
       } catch (error) {
         console.error('Error fetching ride:', error);
-        setLoading(false); // Also set loading to false in case of an error
+        setLoading(false);
       }
     };
     fetchRide();
@@ -44,11 +43,11 @@ const RideDetails = () => {
     } else {
       toast.error('You need to be signed in to make a request.', {
         position: toast.POSITION.TOP_CENTER,
-        autoClose: 5000, // 5 seconds
+        autoClose: 5000,
       });
       setTimeout(() => {
-        loginWithRedirect();
-      }, 5000); // Delay the redirection by 1 second
+        login();
+      }, 5000);
     }
   };
 
@@ -111,3 +110,4 @@ const RideDetails = () => {
 };
 
 export default RideDetails;
+

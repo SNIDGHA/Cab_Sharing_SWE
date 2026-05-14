@@ -13,6 +13,7 @@ import EditRequestPage from './components/EditRequestPage';
 import Navbar from './components/Navbar';
 import AccountSettings from './components/AccountSettings';
 import Authenticate from './components/authenticate';
+import LoginPage from './components/auth/LoginPage';
 function App() {
   return (
     <Router>
@@ -25,6 +26,7 @@ function App() {
           <UserDashboardButton/> */}
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/profile" element={<ProtectedRoute />}>
               <Route index element={<ProfilePage />} />
             </Route>

@@ -1,22 +1,13 @@
-import { useAuth0 } from "@auth0/auth0-react";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../AuthContext";
 
 const LoginButton = () => {
-  const { loginWithRedirect, isAuthenticated, isLoading } = useAuth0();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      navigate("/authenticate");
-    }
-  }, [isAuthenticated, isLoading, navigate]);
+  const { login, isLoading } = useAuth();
 
   return (
     <button
-      onClick={() => loginWithRedirect({ authorizationParams: { prompt: "select_account" } })}
-      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+      onClick={login}
       disabled={isLoading}
+      className="bg-blue-500 hover:bg-blue-600 text-white font-medium px-5 py-2 rounded-md transition duration-200 disabled:opacity-60"
     >
       {isLoading ? "Loading..." : "Log In"}
     </button>

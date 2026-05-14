@@ -1,34 +1,30 @@
 import React, { useEffect } from 'react';
-import { useAuth0 } from '@auth0/auth0-react';
+import { useAuth } from '../../AuthContext';
 import axios from 'axios';
 
-const LoginPage = () => {
-  const { loginWithRedirect, user } = useAuth0();
+const CreateProfile = () => {
+  const { user, isAuthenticated } = useAuth();
 
   useEffect(() => {
     const createProfile = async () => {
       try {
-        await axios.post('YOUR_API_ENDPOINT_HERE', {
+        await axios.post('/profiles', {
           name: user.name,
           email: user.email,
+          displayName: user.name,
+          bio: '',
         });
-        // Handle success or any additional logic here
       } catch (error) {
-        // Handle error here
         console.error('Error creating profile:', error);
       }
     };
 
-    if (user) {
+    if (isAuthenticated && user) {
       createProfile();
     }
-  }, [user]);
-
-  useEffect(() => {
-    loginWithRedirect();
-  }, [loginWithRedirect]);
+  }, [isAuthenticated, user]);
 
   return null;
 };
 
-export default LoginPage;
+export default CreateProfile;

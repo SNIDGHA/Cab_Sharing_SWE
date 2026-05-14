@@ -19,7 +19,7 @@ const EditRequestPage = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        Axios.get(`http://localhost:3000/requests/${rideId}`)
+        Axios.get(`http://localhost:3001/requests/${rideId}`)
             .then(res => {
                 setRequest(res.data);
                 setFormData({
@@ -48,7 +48,7 @@ const EditRequestPage = () => {
                 'Content-Type': 'application/json'
             }
         };
-        Axios.put(`http://localhost:3000/requests/${rideId}`, formData, config)
+        Axios.put(`http://localhost:3001/requests/${rideId}`, formData, config)
             .then(res => {
                 console.log('Request updated:', res.data);
                 navigate('/all-requests'); // Redirect to "/all-requests" after successful submission
@@ -127,3 +127,4 @@ const EditRequestPage = () => {
 };
 
 export default EditRequestPage;
+

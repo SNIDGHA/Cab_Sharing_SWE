@@ -1,12 +1,12 @@
-import { useAuth0 } from "@auth0/auth0-react";
-import React from "react";
+import React from 'react';
+import { useAuth } from '../../AuthContext';
 
 const LogoutButton = () => {
-  const { logout } = useAuth0();
+  const { logout } = useAuth();
 
   return (
     <button
-      onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
+      onClick={logout}
       className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
     >
       Log Out

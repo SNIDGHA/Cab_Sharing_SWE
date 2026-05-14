@@ -4,103 +4,343 @@ const passport = require("passport");
 const session = require("express-session");
 const mongoose = require("mongoose");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const User = require("./models/User"); // User model
+const User = require("./models/User");
+const profilesRouter = require("./routes/profiles");
+const requestsRouter = require("./routes/requests");
+const ridesRouter = require("./routes/rides");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
 const app = express();
 
-mongoose.connect("mongodb://localhost:27017/newDB", {
+// =========================
+// MongoDB Atlas Connection
+// =========================
+
+//console.log("MONGO URI:", process.env.MONGO_URI);
+
+mongoose.set("strictQuery", false);
+
+mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(() => console.log("MongoDB connected successfully"))
-.catch((err) => console.error("MongoDB connection error:", err));
+.then(async () => {
+  console.log("MongoDB Atlas connected successfully");
 
-// Middleware
+  // Insert dummy data if collections are empty
+  const Ride = require("./models/ride");
+  const RequestForASeat = require("./models/request");
+  const Profile = require("./models/profile");
+
+  const rideCount = await Ride.countDocuments();
+  if (rideCount === 0) {
+    const dummyRides = [
+      {
+        driver: "John Doe",
+        departureDetails: {
+          departureLocation: "New York",
+          departureDateTime: new Date("2026-05-20T10:00:00Z")
+        },
+        destinationDetails: {
+          destinationLocation: "Boston",
+          estimatedArrivalTime: "14:00"
+        },
+        additionalInformation: "Non-smoking ride, pets allowed",
+        pricing: {
+          pricePerSeat: "50"
+        },
+        availableSeats: {
+          numberOfAvailableSeats: 3
+        }
+      },
+      {
+        driver: "Jane Smith",
+        departureDetails: {
+          departureLocation: "Los Angeles",
+          departureDateTime: new Date("2026-05-21T08:00:00Z")
+        },
+        destinationDetails: {
+          destinationLocation: "San Francisco",
+          estimatedArrivalTime: "12:00"
+        },
+        additionalInformation: "Comfortable car, music on",
+        pricing: {
+          pricePerSeat: "40"
+        },
+        availableSeats: {
+          numberOfAvailableSeats: 2
+        }
+      }
+    ];
+    await Ride.insertMany(dummyRides);
+    console.log("Dummy rides inserted");
+  }
+
+  const requestCount = await RequestForASeat.countDocuments();
+  if (requestCount === 0) {
+    const dummyRequests = [
+      {
+        yourName: "Alice Johnson",
+        yourEmail: "alice@example.com",
+        messageToDriver: "Looking forward to the ride!",
+        rideId: "dummyRideId1"
+      },
+      {
+        yourName: "Bob Wilson",
+        yourEmail: "bob@example.com",
+        messageToDriver: "I have luggage, hope that's ok",
+        rideId: "dummyRideId2"
+      }
+    ];
+    await RequestForASeat.insertMany(dummyRequests);
+    console.log("Dummy requests inserted");
+  }
+
+  const profileCount = await Profile.countDocuments();
+  if (profileCount === 0) {
+    const dummyProfiles = [
+      {
+        name: "John Doe",
+        email: "john@example.com",
+        displayName: "Johnny",
+        bio: "Love traveling and meeting new people"
+      },
+      {
+        name: "Jane Smith",
+        email: "jane@example.com",
+        displayName: "Janie",
+        bio: "Adventure seeker, always on the go"
+      }
+    ];
+    await Profile.insertMany(dummyProfiles);
+    console.log("Dummy profiles inserted");
+  }
+})
+.catch((err) => {
+  console.log("MongoDB connection failed");
+  console.log(err.message);
+});
+
+/* =========================
+   Middleware
+========================= */
+
 app.use(cookieParser());
-app.use(express.json()); // Parse JSON body
+
+app.use(express.json());
+
 app.use(
   cors({
-    origin: "http://localhost:3001", // React frontend URL
-    credentials: true, // Allow cookies
+    origin: "http://localhost:3000", // frontend URL
+    credentials: true,
   })
 );
 
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "sessionsecret",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 const SECRET_KEY = process.env.JWT_SECRET || "supersecretkey";
 
-// Google OAuth Strategy
-passport.use(new GoogleStrategy({
-  clientID: process.env.GOOGLE_CLIENT_ID,
-  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  callbackURL: "/auth/google/callback"
-}, async (accessToken, refreshToken, profile, done) => {
-  try {
-    let user = await User.findOne({ googleId: profile.id });
-    if (!user) {
-      user = await User.create({ googleId: profile.id, name: profile.displayName });
+/* =========================
+   Google OAuth Strategy
+========================= */
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "http://localhost:3001/auth/google/callback",
+    },
+
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+
+        let user = await User.findOne({
+          googleId: profile.id,
+        });
+
+        if (!user) {
+          user = await User.create({
+            googleId: profile.id,
+            name: profile.displayName,
+            email: profile.emails[0].value,
+            profilePic: profile.photos[0].value,
+          });
+        }
+
+        done(null, user);
+
+      } catch (error) {
+        done(error, null);
+      }
     }
+  )
+);
+
+/* =========================
+   Passport Session
+========================= */
+
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+
+    const user = await User.findById(id);
+
     done(null, user);
+
   } catch (error) {
     done(error, null);
   }
-}));
-
-passport.serializeUser((user, done) => done(null, user.id));
-passport.deserializeUser(async (id, done) => {
-  const user = await User.findById(id);
-  done(null, user);
 });
 
-// 🔹 Generate JWT Token
+/* =========================
+   Generate JWT
+========================= */
+
 const generateToken = (user) => {
-  return jwt.sign({ id: user.id, name: user.name }, SECRET_KEY, { expiresIn: "30m" });
+
+  return jwt.sign(
+    {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      profilePic: user.profilePic,
+    },
+    SECRET_KEY,
+    {
+      expiresIn: "30m",
+    }
+  );
 };
 
-// 🔹 Google Login Route
-app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+/* =========================
+   Routes
+========================= */
 
-// 🔹 Google Callback
-app.get("/auth/google/callback", 
-  passport.authenticate("google", { failureRedirect: "/" }), 
+// Google Login
+
+app.get(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+  })
+);
+
+// Google Callback
+
+app.get(
+  "/auth/google/callback",
+
+  passport.authenticate("google", {
+    failureRedirect: "/",
+  }),
+
   (req, res) => {
+
     const token = generateToken(req.user);
 
-    // Store JWT in an HTTP-Only cookie (secure)
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // Change to true in production (with HTTPS)
-      maxAge: 30 * 60 * 1000, // 30 minutes
+      secure: false,
+      maxAge: 30 * 60 * 1000,
     });
 
-    res.redirect("http://localhost:3001/authenticate"); // Redirect to frontend
+    res.redirect("http://localhost:3000/authenticate");
   }
 );
 
-// 🔹 Verify JWT Middleware
+/* =========================
+   Verify JWT Middleware
+========================= */
+
 const verifyToken = (req, res, next) => {
+
   const token = req.cookies.token;
-  if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+  if (!token) {
+    return res.status(401).json({
+      message: "Unauthorized",
+    });
+  }
 
   jwt.verify(token, SECRET_KEY, (err, decoded) => {
-    if (err) return res.status(403).json({ message: "Invalid token" });
-    req.user = decoded; // Attach user data
+
+    if (err) {
+      return res.status(403).json({
+        message: "Invalid token",
+      });
+    }
+
+    req.user = decoded;
+
     next();
   });
 };
 
-// 🔹 Protected Route (Only if logged in)
+/* =========================
+   Protected Route
+========================= */
+
 app.get("/dashboard", verifyToken, (req, res) => {
-  res.json({ message: "Welcome to Dashboard", user: req.user });
+
+  res.json({
+    message: "Welcome to Dashboard",
+    user: req.user,
+  });
+
 });
 
-// 🔹 Logout (Clear JWT Cookie)
+/* =========================
+   Logout
+========================= */
+
 app.get("/logout", (req, res) => {
+
+  res.clearCookie("token");
+
+  res.json({
+    message: "Logged out successfully",
+  });
+
+});
+
+app.post("/logout", (req, res) => {
   res.clearCookie("token");
   res.json({ message: "Logged out successfully" });
 });
 
-// Start Server
+app.get("/session", verifyToken, (req, res) => {
+  res.json({
+    authenticated: true,
+    user: req.user,
+  });
+});
+
+app.use("/profiles", profilesRouter);
+app.use("/requests", requestsRouter);
+app.use("/rides", ridesRouter);
+
+/* =========================
+   Server
+========================= */
+
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

@@ -13,8 +13,8 @@
     "cors": "^2.8.5",
     "express": "^4.16.4",
     "express-session": "^1.18.1",
-    "mongodb": "^6.6.2",
-    "mongoose": "^5.5.7",
+    "mongodb": "^6.21.0",
+    "mongoose": "^5.13.23",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0"
   },

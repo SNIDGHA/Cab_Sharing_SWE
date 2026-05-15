@@ -156,55 +156,62 @@ const SECRET_KEY = process.env.JWT_SECRET || "supersecretkey";
    Google OAuth Strategy
 ========================= */
 
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:3001";
+console.log("[INIT] BACKEND_URL:", BACKEND_URL);
+console.log("[INIT] CLIENT_URL:", process.env.CLIENT_URL);
+
 passport.use(
   new GoogleStrategy(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${process.env.BACKEND_URL}/auth/google/callback`,
+      callbackURL: `${BACKEND_URL}/auth/google/callback`,
     },
-
-    // Cab_Sharing_SWE/API/server.js
 
     async (accessToken, refreshToken, profile, done) => {
       try {
-        // 1. Safety check for email
+        console.log("[GOOGLE] Profile received for:", profile.displayName);
+
+        // Safety check for email
         if (!profile.emails || !profile.emails[0]) {
-          return done(new Error("No email found"), null);
+          console.error("[GOOGLE] No email found in profile");
+          return done(new Error("No email found in Google profile"), null);
         }
         const googleEmail = profile.emails[0].value;
+        console.log("[GOOGLE] Email:", googleEmail);
 
-        // 2. Safety check for profile picture (Prevents the 500 error!)
+        // Safety check for profile picture
         const profilePic = (profile.photos && profile.photos[0])
           ? profile.photos[0].value
           : "";
 
         let user = await User.findOne({ email: googleEmail });
+        console.log("[GOOGLE] Existing user found:", !!user);
 
         if (user) {
           user.googleId = profile.id;
           user.name = profile.displayName;
-          user.profilePic = profilePic; // Use the safe variable
+          user.profilePic = profilePic;
           user.authType = 'google';
           await user.save();
+          console.log("[GOOGLE] Existing user updated");
         } else {
           user = await User.create({
             googleId: profile.id,
             name: profile.displayName,
             email: googleEmail,
-            profilePic: profilePic, // Use the safe variable
+            profilePic: profilePic,
             authType: 'google',
           });
+          console.log("[GOOGLE] New user created");
         }
 
         done(null, user);
       } catch (error) {
-        console.error("GOOGLE AUTH ERROR:", error); // This will now show in your Render logs!
+        console.error("[GOOGLE] AUTH ERROR:", error.message, error.stack);
         done(error, null);
       }
     }
-
-
   )
 );
 
@@ -276,17 +283,33 @@ app.get(
   }),
 
   (req, res) => {
+    try {
+      console.log("[CALLBACK] req.user:", req.user ? req.user.email : "MISSING - passport failed");
 
-    const token = generateToken(req.user);
+      if (!req.user) {
+        console.error("[CALLBACK] No user on request — passport authentication failed");
+        return res.status(500).send("Authentication failed: no user found");
+      }
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "none",
-      maxAge: 30 * 60 * 1000,
-    });
+      const token = generateToken(req.user);
+      console.log("[CALLBACK] Token generated successfully");
 
-    res.redirect(`${process.env.CLIENT_URL || "http://localhost:3000"}/authenticate`);
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+        maxAge: 30 * 60 * 1000,
+      });
+
+      const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+      const redirectUrl = `${clientUrl}/authenticate`;
+      console.log("[CALLBACK] Redirecting to:", redirectUrl);
+
+      res.redirect(redirectUrl);
+    } catch (err) {
+      console.error("[CALLBACK] ERROR:", err.message, err.stack);
+      res.status(500).send("Internal Server Error during callback");
+    }
   }
 );
 

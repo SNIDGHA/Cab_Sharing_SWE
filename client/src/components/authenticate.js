@@ -40,7 +40,7 @@ const Authenticate = () => {
           <button onClick={handleLogout}>Logout</button>
         </div>
       ) : (
-        <a href=`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/auth/google`>Login with Google</a>
+        <a href={`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/auth/google`}>Login with Google</a>
       )}
     </div>
   );

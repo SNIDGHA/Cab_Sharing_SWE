@@ -45,9 +45,10 @@ const UserDashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
         const [reqRes, rideRes, myRidesData] = await Promise.all([
-          user?.email ? axios.get(`/requests/by-user?email=${encodeURIComponent(user.email)}`) : Promise.resolve({ data: [] }),
-          axios.get('/rides'),
+          user?.email ? axios.get(`${API_URL}/requests/by-user?email=${encodeURIComponent(user.email)}`) : Promise.resolve({ data: [] }),
+          axios.get(`${API_URL}/rides`),
           fetchMyRides(),
         ]);
         setRequestCount(reqRes.data.length);

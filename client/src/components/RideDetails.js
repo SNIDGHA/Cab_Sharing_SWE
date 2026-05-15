@@ -19,7 +19,8 @@ const RideDetails = () => {
   useEffect(() => {
     const fetchRide = async () => {
       try {
-        const response = await axios.get(`/rides/${id}`);
+        const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+        const response = await axios.get(`${API_URL}/rides/${id}`);
         setRide(response.data);
 
         // Fetch applicant count for dynamic pricing

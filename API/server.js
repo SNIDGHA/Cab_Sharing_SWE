@@ -164,36 +164,46 @@ passport.use(
       callbackURL: `${process.env.BACKEND_URL}/auth/google/callback`,
     },
 
+    // Cab_Sharing_SWE/API/server.js
+
     async (accessToken, refreshToken, profile, done) => {
       try {
+        // 1. Safety check for email
+        if (!profile.emails || !profile.emails[0]) {
+          return done(new Error("No email found"), null);
+        }
         const googleEmail = profile.emails[0].value;
 
-        // 1. Check if a user with this email already exists (any authType)
+        // 2. Safety check for profile picture (Prevents the 500 error!)
+        const profilePic = (profile.photos && profile.photos[0])
+          ? profile.photos[0].value
+          : "";
+
         let user = await User.findOne({ email: googleEmail });
 
         if (user) {
-          // Update their google credentials and mark as google auth
           user.googleId = profile.id;
           user.name = profile.displayName;
-          user.profilePic = profile.photos[0].value;
+          user.profilePic = profilePic; // Use the safe variable
           user.authType = 'google';
           await user.save();
         } else {
-          // 2. No user with this email — create fresh
           user = await User.create({
             googleId: profile.id,
             name: profile.displayName,
             email: googleEmail,
-            profilePic: profile.photos[0].value,
+            profilePic: profilePic, // Use the safe variable
             authType: 'google',
           });
         }
 
         done(null, user);
       } catch (error) {
+        console.error("GOOGLE AUTH ERROR:", error); // This will now show in your Render logs!
         done(error, null);
       }
     }
+
 
   )
 );

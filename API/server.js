@@ -27,102 +27,102 @@ mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
-.then(async () => {
-  console.log("MongoDB Atlas connected successfully");
+  .then(async () => {
+    console.log("MongoDB Atlas connected successfully");
 
-  // Insert dummy data if collections are empty
-  const Ride = require("./models/ride");
-  const RequestForASeat = require("./models/request");
-  const Profile = require("./models/profile");
+    // Insert dummy data if collections are empty
+    const Ride = require("./models/ride");
+    const RequestForASeat = require("./models/request");
+    const Profile = require("./models/profile");
 
-  const rideCount = await Ride.countDocuments();
-  if (rideCount === 0) {
-    const dummyRides = [
-      {
-        driver: "John Doe",
-        departureDetails: {
-          departureLocation: "New York",
-          departureDateTime: new Date("2026-05-20T10:00:00Z")
+    const rideCount = await Ride.countDocuments();
+    if (rideCount === 0) {
+      const dummyRides = [
+        {
+          driver: "John Doe",
+          departureDetails: {
+            departureLocation: "New York",
+            departureDateTime: new Date("2026-05-20T10:00:00Z")
+          },
+          destinationDetails: {
+            destinationLocation: "Boston",
+            estimatedArrivalTime: "14:00"
+          },
+          additionalInformation: "Non-smoking ride, pets allowed",
+          pricing: {
+            pricePerSeat: "50"
+          },
+          availableSeats: {
+            numberOfAvailableSeats: 3
+          }
         },
-        destinationDetails: {
-          destinationLocation: "Boston",
-          estimatedArrivalTime: "14:00"
-        },
-        additionalInformation: "Non-smoking ride, pets allowed",
-        pricing: {
-          pricePerSeat: "50"
-        },
-        availableSeats: {
-          numberOfAvailableSeats: 3
+        {
+          driver: "Jane Smith",
+          departureDetails: {
+            departureLocation: "Los Angeles",
+            departureDateTime: new Date("2026-05-21T08:00:00Z")
+          },
+          destinationDetails: {
+            destinationLocation: "San Francisco",
+            estimatedArrivalTime: "12:00"
+          },
+          additionalInformation: "Comfortable car, music on",
+          pricing: {
+            pricePerSeat: "40"
+          },
+          availableSeats: {
+            numberOfAvailableSeats: 2
+          }
         }
-      },
-      {
-        driver: "Jane Smith",
-        departureDetails: {
-          departureLocation: "Los Angeles",
-          departureDateTime: new Date("2026-05-21T08:00:00Z")
+      ];
+      await Ride.insertMany(dummyRides);
+      console.log("Dummy rides inserted");
+    }
+
+    const requestCount = await RequestForASeat.countDocuments();
+    if (requestCount === 0) {
+      const dummyRequests = [
+        {
+          yourName: "Alice Johnson",
+          yourEmail: "alice@example.com",
+          messageToDriver: "Looking forward to the ride!",
+          rideId: "dummyRideId1"
         },
-        destinationDetails: {
-          destinationLocation: "San Francisco",
-          estimatedArrivalTime: "12:00"
-        },
-        additionalInformation: "Comfortable car, music on",
-        pricing: {
-          pricePerSeat: "40"
-        },
-        availableSeats: {
-          numberOfAvailableSeats: 2
+        {
+          yourName: "Bob Wilson",
+          yourEmail: "bob@example.com",
+          messageToDriver: "I have luggage, hope that's ok",
+          rideId: "dummyRideId2"
         }
-      }
-    ];
-    await Ride.insertMany(dummyRides);
-    console.log("Dummy rides inserted");
-  }
+      ];
+      await RequestForASeat.insertMany(dummyRequests);
+      console.log("Dummy requests inserted");
+    }
 
-  const requestCount = await RequestForASeat.countDocuments();
-  if (requestCount === 0) {
-    const dummyRequests = [
-      {
-        yourName: "Alice Johnson",
-        yourEmail: "alice@example.com",
-        messageToDriver: "Looking forward to the ride!",
-        rideId: "dummyRideId1"
-      },
-      {
-        yourName: "Bob Wilson",
-        yourEmail: "bob@example.com",
-        messageToDriver: "I have luggage, hope that's ok",
-        rideId: "dummyRideId2"
-      }
-    ];
-    await RequestForASeat.insertMany(dummyRequests);
-    console.log("Dummy requests inserted");
-  }
-
-  const profileCount = await Profile.countDocuments();
-  if (profileCount === 0) {
-    const dummyProfiles = [
-      {
-        name: "John Doe",
-        email: "john@example.com",
-        displayName: "Johnny",
-        bio: "Love traveling and meeting new people"
-      },
-      {
-        name: "Jane Smith",
-        email: "jane@example.com",
-        displayName: "Janie",
-        bio: "Adventure seeker, always on the go"
-      }
-    ];
-    await Profile.insertMany(dummyProfiles);
-    console.log("Dummy profiles inserted");
-  }
-})
-.catch((err) => {
-  console.log("MongoDB connection failed");
-  console.log(err.message);
-});
+    const profileCount = await Profile.countDocuments();
+    if (profileCount === 0) {
+      const dummyProfiles = [
+        {
+          name: "John Doe",
+          email: "john@example.com",
+          displayName: "Johnny",
+          bio: "Love traveling and meeting new people"
+        },
+        {
+          name: "Jane Smith",
+          email: "jane@example.com",
+          displayName: "Janie",
+          bio: "Adventure seeker, always on the go"
+        }
+      ];
+      await Profile.insertMany(dummyProfiles);
+      console.log("Dummy profiles inserted");
+    }
+  })
+  .catch((err) => {
+    console.log("MongoDB connection failed");
+    console.log(err.message);
+  });
 
 /* =========================
    Middleware
@@ -161,7 +161,7 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:3001/auth/google/callback",
+      callbackURL: `${process.env.BACKEND_URL}/auth/google/callback`,
     },
 
     async (accessToken, refreshToken, profile, done) => {
@@ -173,19 +173,19 @@ passport.use(
 
         if (user) {
           // Update their google credentials and mark as google auth
-          user.googleId   = profile.id;
-          user.name       = profile.displayName;
+          user.googleId = profile.id;
+          user.name = profile.displayName;
           user.profilePic = profile.photos[0].value;
-          user.authType   = 'google';
+          user.authType = 'google';
           await user.save();
         } else {
           // 2. No user with this email — create fresh
           user = await User.create({
-            googleId:   profile.id,
-            name:       profile.displayName,
-            email:      googleEmail,
+            googleId: profile.id,
+            name: profile.displayName,
+            email: googleEmail,
             profilePic: profile.photos[0].value,
-            authType:   'google',
+            authType: 'google',
           });
         }
 

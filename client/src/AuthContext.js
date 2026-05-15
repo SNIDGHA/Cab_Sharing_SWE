@@ -2,6 +2,22 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 
 const AuthContext = createContext();
 
+// Helper: get token from localStorage
+const getToken = () => localStorage.getItem('authToken');
+
+// Helper: make authenticated fetch using Authorization header
+export const authFetch = (url, options = {}) => {
+  const token = getToken();
+  return fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+    },
+  });
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -12,11 +28,17 @@ export const AuthProvider = ({ children }) => {
   const loadSession = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_URL}/session`, {
-        credentials: 'include',
-      });
+      const token = getToken();
+      if (!token) {
+        setUser(null);
+        setIsAuthenticated(false);
+        return;
+      }
+
+      const response = await authFetch(`${API_URL}/session`);
 
       if (!response.ok) {
+        localStorage.removeItem('authToken');
         setUser(null);
         setIsAuthenticated(false);
         return;
@@ -53,11 +75,13 @@ export const AuthProvider = ({ children }) => {
     const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({ email, password }),
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Login failed');
+    if (data.token) {
+      localStorage.setItem('authToken', data.token);
+    }
     await loadSession();
     return data;
   };
@@ -67,20 +91,19 @@ export const AuthProvider = ({ children }) => {
     const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({ name, email, password }),
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || 'Registration failed');
+    if (data.token) {
+      localStorage.setItem('authToken', data.token);
+    }
     await loadSession();
     return data;
   };
 
   const logout = async () => {
-    await fetch(`${API_URL}/logout`, {
-      method: 'POST',
-      credentials: 'include',
-    });
+    localStorage.removeItem('authToken');
     setUser(null);
     setIsAuthenticated(false);
   };

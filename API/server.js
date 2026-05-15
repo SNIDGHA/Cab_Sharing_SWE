@@ -300,23 +300,11 @@ app.get(
       return res.status(500).send("Failed to generate token");
     }
 
-    try {
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "none",
-        maxAge: 30 * 60 * 1000,
-      });
-      console.log("[CALLBACK] Step 3: cookie set OK");
-    } catch (err) {
-      console.error("[CALLBACK] ERROR setting cookie:", err.message);
-      return res.status(500).send("Failed to set cookie");
-    }
-
+    // Pass token via URL query param to avoid cross-site cookie issues
     try {
       const clientUrl = (process.env.CLIENT_URL || "http://localhost:3000").trim();
-      const redirectUrl = `${clientUrl}/authenticate`;
-      console.log("[CALLBACK] Step 4: redirecting to:", redirectUrl);
+      const redirectUrl = `${clientUrl}/authenticate?token=${token}`;
+      console.log("[CALLBACK] Step 3: redirecting to:", clientUrl + "/authenticate?token=<hidden>");
       res.redirect(redirectUrl);
     } catch (err) {
       console.error("[CALLBACK] ERROR redirecting:", err.message);
@@ -331,7 +319,11 @@ app.get(
 
 const verifyToken = (req, res, next) => {
 
-  const token = req.cookies.token;
+  // Accept token from Authorization header (Bearer) OR from cookie
+  let token = req.cookies.token;
+  if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
 
   if (!token) {
     return res.status(401).json({

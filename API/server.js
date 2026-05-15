@@ -8,6 +8,7 @@ const User = require("./models/User");
 const profilesRouter = require("./routes/profiles");
 const requestsRouter = require("./routes/requests");
 const ridesRouter = require("./routes/rides");
+const authRouter = require("./routes/auth");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
@@ -165,26 +166,35 @@ passport.use(
 
     async (accessToken, refreshToken, profile, done) => {
       try {
+        const googleEmail = profile.emails[0].value;
 
-        let user = await User.findOne({
-          googleId: profile.id,
-        });
+        // 1. Check if a user with this email already exists (any authType)
+        let user = await User.findOne({ email: googleEmail });
 
-        if (!user) {
+        if (user) {
+          // Update their google credentials and mark as google auth
+          user.googleId   = profile.id;
+          user.name       = profile.displayName;
+          user.profilePic = profile.photos[0].value;
+          user.authType   = 'google';
+          await user.save();
+        } else {
+          // 2. No user with this email — create fresh
           user = await User.create({
-            googleId: profile.id,
-            name: profile.displayName,
-            email: profile.emails[0].value,
+            googleId:   profile.id,
+            name:       profile.displayName,
+            email:      googleEmail,
             profilePic: profile.photos[0].value,
+            authType:   'google',
           });
         }
 
         done(null, user);
-
       } catch (error) {
         done(error, null);
       }
     }
+
   )
 );
 
@@ -238,6 +248,7 @@ app.get(
   "/auth/google",
   passport.authenticate("google", {
     scope: ["profile", "email"],
+    prompt: "select_account",
   })
 );
 
@@ -331,9 +342,13 @@ app.get("/session", verifyToken, (req, res) => {
   });
 });
 
+const notificationsRouter = require('./routes/notifications');
+
+app.use("/auth", authRouter);
 app.use("/profiles", profilesRouter);
 app.use("/requests", requestsRouter);
 app.use("/rides", ridesRouter);
+app.use("/notifications", notificationsRouter);
 
 /* =========================
    Server

@@ -42,12 +42,42 @@ export const AuthProvider = ({ children }) => {
     loadSession();
   }, []);
 
+  // Google OAuth — redirects to Google
   const login = () => {
     window.location.href = `${API_URL}/auth/google`;
   };
 
+  // Local email/password login
+  const loginWithEmail = async (email, password) => {
+    const response = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Login failed');
+    await loadSession();
+    return data;
+  };
+
+  // Local registration
+  const register = async (name, email, password) => {
+    const response = await fetch(`${API_URL}/auth/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ name, email, password }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Registration failed');
+    await loadSession();
+    return data;
+  };
+
   const logout = async () => {
     await fetch(`${API_URL}/logout`, {
+      method: 'POST',
       credentials: 'include',
     });
     setUser(null);
@@ -55,7 +85,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, logout, refreshSession: loadSession }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, loginWithEmail, register, logout, refreshSession: loadSession }}>
       {children}
     </AuthContext.Provider>
   );

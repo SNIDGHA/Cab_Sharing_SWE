@@ -54,7 +54,7 @@ router.patch('/:id', getProfile, async (req, res) => {
 // Deleting a profile
 router.delete('/:id', getProfile, async (req, res) => {
   try {
-    await res.profile.remove();
+    await res.profile.deleteOne();
     res.json({ message: 'Deleted Profile' });
   } catch (err) {
     res.status(500).json({ message: err.message });

@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const Ride = require('../models/ride');
+const verifyToken = require('../middleware/auth');
 
-// Getting all rides
+// GET all rides
 router.get('/', async (req, res) => {
   try {
     const rides = await Ride.find();
@@ -12,20 +13,35 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Getting one ride
+// GET rides posted by a specific user — /rides/by-user?email=
+router.get('/by-user', async (req, res) => {
+  const { email } = req.query;
+  if (!email) return res.status(400).json({ message: 'email query param required' });
+  try {
+    const rides = await Ride.find({ postedBy: email.toLowerCase().trim() });
+    res.json(rides);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// GET one ride
 router.get('/:id', getRide, (req, res) => {
   res.json(res.ride);
 });
 
-// Creating a ride
+// POST — create a ride
 router.post('/', async (req, res) => {
   const ride = new Ride({
-    driver: req.body.driver,
-    departureDetails: req.body.departureDetails,
-    destinationDetails: req.body.destinationDetails,
+    driver:                req.body.driver,
+    postedBy:              req.body.postedBy || null,
+    departureDetails:      req.body.departureDetails,
+    destinationDetails:    req.body.destinationDetails,
     additionalInformation: req.body.additionalInformation,
-    pricing: req.body.pricing,
-    availableSeats: req.body.availableSeats,
+    pricing: {
+      totalFare: Number(req.body.pricing?.totalFare ?? req.body.pricing?.pricePerSeat ?? 0),
+    },
+    availableSeats:        req.body.availableSeats,
   });
   try {
     const newRide = await ride.save();
@@ -35,25 +51,45 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Updating a ride
-router.patch('/:id', getRide, async (req, res) => {
-  if (req.body.driver != null) {
-    res.ride.driver = req.body.driver;
+// PUT — full edit (owner only, must be authenticated)
+router.put('/:id', verifyToken, getRide, async (req, res) => {
+  if (res.ride.postedBy && res.ride.postedBy !== req.user.email) {
+    return res.status(403).json({ message: 'You can only edit your own rides.' });
   }
-  // Similarly update other fields accordingly
+  const { departureDetails, destinationDetails, additionalInformation, pricing, availableSeats } = req.body;
+  if (departureDetails)      res.ride.departureDetails      = departureDetails;
+  if (destinationDetails)    res.ride.destinationDetails    = destinationDetails;
+  if (additionalInformation) res.ride.additionalInformation = additionalInformation;
+  if (pricing?.totalFare != null) res.ride.pricing = { totalFare: Number(pricing.totalFare) };
+  if (availableSeats?.numberOfAvailableSeats != null) {
+    res.ride.availableSeats = { numberOfAvailableSeats: Number(availableSeats.numberOfAvailableSeats) };
+  }
   try {
-    const updatedRide = await res.ride.save();
-    res.json(updatedRide);
+    const updated = await res.ride.save();
+    res.json(updated);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 });
 
-// Deleting a ride
-router.delete('/:id', getRide, async (req, res) => {
+// PATCH — partial update
+router.patch('/:id', getRide, async (req, res) => {
+  if (req.body.driver != null) res.ride.driver = req.body.driver;
   try {
-    await res.ride.remove();
-    res.json({ message: 'Deleted Ride' });
+    res.json(await res.ride.save());
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// DELETE — owner only (authenticated)
+router.delete('/:id', verifyToken, getRide, async (req, res) => {
+  if (res.ride.postedBy && res.ride.postedBy !== req.user.email) {
+    return res.status(403).json({ message: 'You can only delete your own rides.' });
+  }
+  try {
+    await res.ride.deleteOne();
+    res.json({ message: 'Ride deleted.' });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -63,13 +99,10 @@ async function getRide(req, res, next) {
   let ride;
   try {
     ride = await Ride.findById(req.params.id);
-    if (ride == null) {
-      return res.status(404).json({ message: 'Cannot find ride' });
-    }
+    if (!ride) return res.status(404).json({ message: 'Cannot find ride' });
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }
-
   res.ride = ride;
   next();
 }

@@ -5,42 +5,25 @@ const rideSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  postedBy: {
+    type: String,       // email of the user who posted this ride
+    default: null
+  },
   departureDetails: {
-    departureLocation: {
-      type: String,
-      required: true
-    },
-    departureDateTime: {
-      type: Date,
-      required: true
-    }
+    departureLocation: { type: String, required: true },
+    departureDateTime: { type: Date,   required: true }
   },
   destinationDetails: {
-    destinationLocation: {
-      type: String,
-      required: true
-    },
-    estimatedArrivalTime: {
-      type: String,
-      required: true
-    }
+    destinationLocation:  { type: String, required: true },
+    estimatedArrivalTime: { type: String, required: true }
   },
-  additionalInformation: {
-    type: String,
-    required: true
-  },
+  additionalInformation: { type: String, required: true },
   pricing: {
-    pricePerSeat: {
-      type: String,
-      required: true
-    }
+    totalFare: { type: Number, required: true }   // total cost for the whole ride
   },
   availableSeats: {
-    numberOfAvailableSeats: {
-      type: Number,
-      required: true
-    }
+    numberOfAvailableSeats: { type: Number, required: true }
   }
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Ride', rideSchema);

@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import shareRideImage from '../assets/images/share-ride.png';
-import goGreenImage from '../assets/images/go-green.png';
-import saveMoneyImage from '../assets/images/save-money.png';
 import Typewriter from 'typewriter-effect';
 import { PacmanLoader } from 'react-spinners';
 
@@ -13,8 +10,7 @@ const Home = () => {
     useEffect(() => {
         const timer = setTimeout(() => {
             setLoading(false);
-        }, 3000); // Set the time according to your preference
-
+        }, 1200); // Reduced loading time for better UX
         return () => clearTimeout(timer);
     }, []);
 
@@ -24,66 +20,135 @@ const Home = () => {
 
     if (loading) {
         return (
-            <div className="loading-container flex justify-center items-center h-screen">
-                <PacmanLoader size={40} margin={2} color={"#00BFFF"} />
+            <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-indigo-50 to-blue-50">
+                <PacmanLoader size={40} margin={2} color={"#4f46e5"} />
             </div>
         );
     }
 
-
-
     return (
-        <div className="home-container bg-gradient-to-b from-indigo-50 to-indigo-100 min-h-screen flex flex-col items-center justify-center">
-            {/* <h1 className="text-5xl font-extrabold text-indigo-700 my-6">GoTogether</h1> */}
-            <Typewriter
-                onInit={(typewriter) => {
-                    typewriter
-                        .typeString('GoTogether !')
-                        .pauseFor(2000)
-                        .deleteAll()
-                        .start();
-                }}
-                options={{
-                    loop: true
-                }}
-            />
+        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 font-sans">
+            
+            {/* --- Hero Section --- */}
+            <div className="relative overflow-hidden pt-20 pb-32 lg:pt-32 lg:pb-40 text-center px-4">
+                {/* Decorative background blobs */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-indigo-100 to-transparent blur-3xl rounded-full opacity-60 -z-10 pointer-events-none"></div>
 
+                <div className="max-w-4xl mx-auto relative z-10">
+                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-100 text-indigo-700 text-sm font-semibold mb-6 shadow-sm border border-indigo-200">
+                        <span className="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                        The smart way to travel
+                    </div>
 
-
-            <p className="text-xl text-gray-800 mb-12">Connecting Your Journeys</p>
-            <button
-                onClick={goToRides}
-                className="bg-indigo-700 hover:bg-indigo-800 text-white font-semibold py-3 px-8 rounded-lg text-xl mb-12 transition duration-300 ease-in-out transform hover:scale-105"
-            >
-                Find a Ride
-            </button>
-            <div className="features grid gap-12 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                <div className="feature bg-white rounded-lg shadow-xl p-8 text-center">
-                    <img src={shareRideImage} alt="Share Ride" className="h-30 mx-auto mb-6" />
-                    <h3 className="text-2xl font-extrabold text-indigo-700 mb-4">Share Your Ride</h3>
-                    <p className="text-gray-700 text-base">Meet interesting people and split the costs by sharing your ride.</p>
-                </div>
-                <div className="feature bg-white rounded-lg shadow-xl p-8 text-center">
-                    <img src={goGreenImage} alt="Eco-friendly" className="h-30 mx-auto mb-6" />
-                    <h3 className="text-2xl font-extrabold text-indigo-700 mb-4">Go Green</h3>
-                    <p className="text-gray-700 text-base">Reduce your carbon footprint by carpooling with others.</p>
-                </div>
-                <div className="feature bg-white rounded-lg shadow-xl p-8 text-center">
-                    <img src={saveMoneyImage} alt="Save Money" className="h-48 mx-auto mb-6" />
-                    <h3 className="text-2xl font-extrabold text-indigo-700 mb-4">Save Money</h3>
-                    <p className="text-gray-700 text-base">Cut down your travel expenses by sharing the ride with fellow travelers.</p>
+                    <h1 className="text-5xl md:text-7xl font-extrabold text-slate-900 tracking-tight mb-4">
+                        <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500 leading-tight">
+                            <Typewriter
+                                onInit={(typewriter) => {
+                                    typewriter
+                                        .typeString('GoTogether.')
+                                        .pauseFor(2000)
+                                        .deleteAll()
+                                        .typeString('Share Rides.')
+                                        .pauseFor(2000)
+                                        .deleteAll()
+                                        .typeString('Save Money.')
+                                        .start();
+                                }}
+                                options={{
+                                    loop: true,
+                                    wrapperClassName: "Typewriter__wrapper"
+                                }}
+                            />
+                        </span>
+                    </h1>
+                    
+                    <p className="mt-6 text-xl md:text-2xl text-slate-600 max-w-2xl mx-auto font-medium">
+                        Connecting your journeys. Meet interesting people, reduce your carbon footprint, and split travel costs.
+                    </p>
+                    
+                    <div className="mt-10 flex justify-center gap-4">
+                        <button
+                            onClick={goToRides}
+                            className="bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-semibold py-4 px-10 rounded-2xl text-lg transition-all duration-300 shadow-lg shadow-indigo-200 hover:shadow-xl hover:-translate-y-1"
+                        >
+                            Find a Ride Now
+                        </button>
+                    </div>
                 </div>
             </div>
-            <div className="testimonials grid gap-12 grid-cols-1 sm:grid-cols-2 mt-16 mb-5">
-                <div className="testimonial bg-white rounded-lg shadow-xl p-8">
-                    <p className="text-gray-800 text-lg mb-6">"Finding rides has never been easier! I love how simple and convenient GoTogether makes carpooling."</p>
-                    <p className="text-gray-800 font-semibold">- Amali, A Happy Commuter</p>
-                </div>
-                <div className="testimonial bg-white rounded-lg shadow-xl p-8">
-                    <p className="text-gray-800 text-lg mb-6">"I've met some incredible people through this app. It's not just about sharing rides, it's about sharing experiences."</p>
-                    <p className="text-gray-800 font-semibold">- Tanisha, A Regular User</p>
+
+            {/* --- Features Section (Bento Grid Style) --- */}
+            <div className="max-w-6xl mx-auto px-4 py-16">
+                <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
+                    
+                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 transition-transform duration-300 hover:-translate-y-1 hover:shadow-md group">
+                        <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                            🤝
+                        </div>
+                        <h3 className="text-2xl font-bold text-slate-900 mb-3">Share Your Ride</h3>
+                        <p className="text-slate-600 leading-relaxed">
+                            Meet interesting people and split the costs by sharing your commute. Create meaningful connections on the road.
+                        </p>
+                    </div>
+
+                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 transition-transform duration-300 hover:-translate-y-1 hover:shadow-md group">
+                        <div className="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                            🌱
+                        </div>
+                        <h3 className="text-2xl font-bold text-slate-900 mb-3">Go Green</h3>
+                        <p className="text-slate-600 leading-relaxed">
+                            Reduce your carbon footprint by carpooling. Fewer cars on the road means a healthier planet for everyone.
+                        </p>
+                    </div>
+
+                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 transition-transform duration-300 hover:-translate-y-1 hover:shadow-md group">
+                        <div className="w-16 h-16 rounded-2xl bg-amber-50 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform duration-300">
+                            💰
+                        </div>
+                        <h3 className="text-2xl font-bold text-slate-900 mb-3">Save Money</h3>
+                        <p className="text-slate-600 leading-relaxed">
+                            Cut down your travel expenses significantly. Our dynamic pricing ensures everyone pays their fair share.
+                        </p>
+                    </div>
                 </div>
             </div>
+
+            {/* --- Testimonials Section --- */}
+            <div className="max-w-4xl mx-auto px-4 py-20">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl font-bold text-slate-900">Loved by Commuters</h2>
+                </div>
+                <div className="grid gap-8 grid-cols-1 sm:grid-cols-2">
+                    
+                    <div className="bg-white/60 backdrop-blur-md rounded-3xl p-8 shadow-sm border border-white relative">
+                        <div className="text-4xl text-indigo-200 absolute top-4 right-6 font-serif">"</div>
+                        <p className="text-slate-700 text-lg mb-6 relative z-10 font-medium">
+                            Finding rides has never been easier! I love how simple and convenient GoTogether makes carpooling.
+                        </p>
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-400 to-blue-400 flex items-center justify-center text-white font-bold">
+                                A
+                            </div>
+                            <p className="text-slate-900 font-semibold">Amali</p>
+                        </div>
+                    </div>
+
+                    <div className="bg-white/60 backdrop-blur-md rounded-3xl p-8 shadow-sm border border-white relative">
+                        <div className="text-4xl text-indigo-200 absolute top-4 right-6 font-serif">"</div>
+                        <p className="text-slate-700 text-lg mb-6 relative z-10 font-medium">
+                            I've met some incredible people through this app. It's not just about sharing rides, it's about sharing experiences.
+                        </p>
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold">
+                                T
+                            </div>
+                            <p className="text-slate-900 font-semibold">Tanisha</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
         </div>
     );
 };

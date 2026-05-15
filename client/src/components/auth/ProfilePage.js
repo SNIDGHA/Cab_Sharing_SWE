@@ -25,7 +25,7 @@ const ProfilePage = () => {
     setProfileImage(imageUrl);
 
     try {
-      await axios.put("http://localhost:3001/profiles/profile-pic", {
+      await axios.put(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/profiles/profile-pic`, {
         email: user.email,
         profilePic: imageUrl,
       });

@@ -37,7 +37,7 @@ const UserDashboard = () => {
   const fetchMyRides = useCallback(async () => {
     if (!user?.email) return [];
     const res = await axios.get(
-      `http://localhost:3001/rides/by-user?email=${encodeURIComponent(user.email)}`
+      `${process.env.REACT_APP_API_URL || `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}`}/rides/by-user?email=${encodeURIComponent(user.email)}`
     );
     return res.data;
   }, [user?.email]);
@@ -115,10 +115,10 @@ const UserDashboard = () => {
 
     try {
       if (editingRide) {
-        await axios.put(`http://localhost:3001/rides/${editingRide._id}`, payload, { withCredentials: true });
+        await axios.put(`${process.env.REACT_APP_API_URL || `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}`}/rides/${editingRide._id}`, payload, { withCredentials: true });
         setFormSuccess('✅ Ride updated!');
       } else {
-        await axios.post('http://localhost:3001/rides', payload);
+        await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/rides`, payload);
         setFormSuccess('🎉 Ride posted!');
         setRideCount((c) => c + 1);
       }
@@ -140,7 +140,7 @@ const UserDashboard = () => {
 
   const confirmDelete = async () => {
     try {
-      await axios.delete(`http://localhost:3001/rides/${deletingId}`, { withCredentials: true });
+      await axios.delete(`${process.env.REACT_APP_API_URL || `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}`}/rides/${deletingId}`, { withCredentials: true });
       const updated = await fetchMyRides();
       setMyRides(updated);
       setRideCount((c) => c - 1);

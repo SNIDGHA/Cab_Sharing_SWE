@@ -16,8 +16,8 @@ const AllRides = () => {
     const fetchAll = async () => {
       try {
         const [ridesRes, countsRes] = await Promise.all([
-          axios.get('http://localhost:3001/rides'),
-          axios.get('http://localhost:3001/requests/counts'),
+          axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/rides`),
+          axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/requests/counts`),
         ]);
         setRides(ridesRes.data);
         setCountsMap(countsRes.data);
@@ -25,7 +25,7 @@ const AllRides = () => {
         // Fetch which rides this user has applied for
         if (isAuthenticated && user?.email) {
           const appliedRes = await axios.get(
-            `http://localhost:3001/requests/by-user?email=${encodeURIComponent(user.email)}`
+            `${process.env.REACT_APP_API_URL || `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}`}/requests/by-user?email=${encodeURIComponent(user.email)}`
           );
           setAppliedIds(new Set(appliedRes.data.map((r) => r.rideId)));
         }

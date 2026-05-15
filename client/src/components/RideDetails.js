@@ -23,19 +23,19 @@ const RideDetails = () => {
         setRide(response.data);
 
         // Fetch applicant count for dynamic pricing
-        const countsRes = await axios.get('http://localhost:3001/requests/counts');
+        const countsRes = await axios.get(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/requests/counts`);
         setApplicantCount(countsRes.data[id] || 0);
 
         // Check if user already applied
         if (isAuthenticated && user?.email) {
           const checkRes = await axios.get(
-            `http://localhost:3001/requests/check?email=${encodeURIComponent(user.email)}&rideId=${id}`
+            `${process.env.REACT_APP_API_URL || `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}`}/requests/check?email=${encodeURIComponent(user.email)}&rideId=${id}`
           );
           setAlreadyApplied(checkRes.data.alreadyApplied);
           
           // If the user is the owner, fetch the list of applicants
           if (response.data.postedBy && response.data.postedBy.toLowerCase() === user.email.toLowerCase()) {
-             const applicantsRes = await axios.get(`http://localhost:3001/requests/by-ride/${id}`);
+             const applicantsRes = await axios.get(`${process.env.REACT_APP_API_URL || `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}`}/requests/by-ride/${id}`);
              setApplicants(applicantsRes.data);
           }
         }

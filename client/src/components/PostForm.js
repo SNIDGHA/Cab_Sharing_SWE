@@ -4,7 +4,7 @@ import {useState} from 'react'
 
 function PostForm() {
 
-    const url = "http://localhost:3001/profiles"
+    const url = `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/profiles`
     const [data,setData] = useState({
         name:"",
         email:"",

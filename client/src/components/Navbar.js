@@ -20,7 +20,7 @@ const Navbar = () => {
     const fetchNotifications = useCallback(async () => {
         if (isAuthenticated && user?.email) {
             try {
-                const res = await axios.get(`http://localhost:3001/notifications?email=${encodeURIComponent(user.email)}`);
+                const res = await axios.get(`${process.env.REACT_APP_API_URL || `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}`}/notifications?email=${encodeURIComponent(user.email)}`);
                 setNotifications(res.data);
             } catch (err) {
                 console.error('Failed to fetch notifications:', err);
@@ -48,7 +48,7 @@ const Navbar = () => {
 
     const markAsRead = async (id, rideId) => {
         try {
-            await axios.patch(`http://localhost:3001/notifications/${id}/read`);
+            await axios.patch(`${process.env.REACT_APP_API_URL || `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}`}/notifications/${id}/read`);
             setNotifications(prev => prev.map(n => n._id === id ? { ...n, read: true } : n));
             setShowNotifications(false);
             if (rideId) {
@@ -62,7 +62,7 @@ const Navbar = () => {
     const markAllAsRead = async () => {
         if (!isAuthenticated || !user?.email) return;
         try {
-            await axios.patch(`http://localhost:3001/notifications/mark-all-read?email=${encodeURIComponent(user.email)}`);
+            await axios.patch(`${process.env.REACT_APP_API_URL || `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}`}/notifications/mark-all-read?email=${encodeURIComponent(user.email)}`);
             setNotifications(prev => prev.map(n => ({ ...n, read: true })));
         } catch (err) {
             console.error('Failed to mark all as read:', err);

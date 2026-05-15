@@ -7,7 +7,7 @@ const Authenticate = () => {
 
   useEffect(() => {
     // Check session on page load
-    fetch("http://localhost:3001/session", {
+    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/session`, {
       credentials: "include",
     })
       .then((res) => {
@@ -25,7 +25,7 @@ const Authenticate = () => {
   }, [navigate]);
 
   const handleLogout = async () => {
-    await fetch("http://localhost:3001/logout", {
+    await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/logout`, {
       method: "GET",
       credentials: "include",
     });
@@ -40,7 +40,7 @@ const Authenticate = () => {
           <button onClick={handleLogout}>Logout</button>
         </div>
       ) : (
-        <a href="http://localhost:3001/auth/google">Login with Google</a>
+        <a href=`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/auth/google`>Login with Google</a>
       )}
     </div>
   );

@@ -134,7 +134,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: "http://localhost:3000", // frontend URL
+    origin: process.env.CLIENT_URL || "http://localhost:3000", // frontend URL
     credentials: true,
   })
 );
@@ -271,7 +271,7 @@ app.get(
       maxAge: 30 * 60 * 1000,
     });
 
-    res.redirect("http://localhost:3000/authenticate");
+    res.redirect(`${process.env.CLIENT_URL || "http://localhost:3000"}/authenticate`);
   }
 );
 

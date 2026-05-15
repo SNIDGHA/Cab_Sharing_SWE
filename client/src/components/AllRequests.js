@@ -16,7 +16,7 @@ function AllRequests() {
 
     useEffect(() => {
         if (isAuthenticated && user?.email) {
-            Axios.get(`http://localhost:3001/requests/by-user?email=${encodeURIComponent(user.email)}`)
+            Axios.get(`${process.env.REACT_APP_API_URL || `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}`}/requests/by-user?email=${encodeURIComponent(user.email)}`)
                 .then(res => {
                     setRequests(res.data);
                     setLoading(false);
@@ -43,7 +43,7 @@ function AllRequests() {
         if (!id) return;
         setPendingDeleteId(null);
 
-        Axios.delete(`http://localhost:3001/requests/${id}`)
+        Axios.delete(`${process.env.REACT_APP_API_URL || `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}`}/requests/${id}`)
             .then(() => {
                 setRequests(prev => prev.filter(r => r._id !== id));
                 toast.success('Request deleted.', {

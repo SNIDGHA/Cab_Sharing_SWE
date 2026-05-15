@@ -31,7 +31,7 @@ function CreateRequest() {
 
   // Fetch ride to get postedBy
   useEffect(() => {
-    axios.get(`http://localhost:3001/rides/${id}`)
+    axios.get(`${process.env.REACT_APP_API_URL || `${process.env.REACT_APP_API_URL || 'http://localhost:3001'}`}/rides/${id}`)
       .then((res) => setRide(res.data))
       .catch(console.error);
   }, [id]);
@@ -47,7 +47,7 @@ function CreateRequest() {
     e.preventDefault();
     setErrorMsg('');
     try {
-      await axios.post('http://localhost:3001/requests', {
+      await axios.post(`${process.env.REACT_APP_API_URL || 'http://localhost:3001'}/requests`, {
         yourName:        data.yourName,
         yourEmail:       data.yourEmail,
         messageToDriver: data.messageToDriver,

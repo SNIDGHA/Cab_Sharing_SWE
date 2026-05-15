@@ -283,32 +283,44 @@ app.get(
   }),
 
   (req, res) => {
+    console.log("[CALLBACK] Step 1: entered callback");
+    console.log("[CALLBACK] req.user:", req.user ? req.user.email : "MISSING");
+
+    if (!req.user) {
+      console.error("[CALLBACK] No user — passport failed silently");
+      return res.status(500).send("Authentication failed: no user found");
+    }
+
+    let token;
     try {
-      console.log("[CALLBACK] req.user:", req.user ? req.user.email : "MISSING - passport failed");
+      token = generateToken(req.user);
+      console.log("[CALLBACK] Step 2: token generated OK");
+    } catch (err) {
+      console.error("[CALLBACK] ERROR generating token:", err.message);
+      return res.status(500).send("Failed to generate token");
+    }
 
-      if (!req.user) {
-        console.error("[CALLBACK] No user on request — passport authentication failed");
-        return res.status(500).send("Authentication failed: no user found");
-      }
-
-      const token = generateToken(req.user);
-      console.log("[CALLBACK] Token generated successfully");
-
+    try {
       res.cookie("token", token, {
         httpOnly: true,
         secure: true,
         sameSite: "none",
         maxAge: 30 * 60 * 1000,
       });
+      console.log("[CALLBACK] Step 3: cookie set OK");
+    } catch (err) {
+      console.error("[CALLBACK] ERROR setting cookie:", err.message);
+      return res.status(500).send("Failed to set cookie");
+    }
 
-      const clientUrl = process.env.CLIENT_URL || "http://localhost:3000";
+    try {
+      const clientUrl = (process.env.CLIENT_URL || "http://localhost:3000").trim();
       const redirectUrl = `${clientUrl}/authenticate`;
-      console.log("[CALLBACK] Redirecting to:", redirectUrl);
-
+      console.log("[CALLBACK] Step 4: redirecting to:", redirectUrl);
       res.redirect(redirectUrl);
     } catch (err) {
-      console.error("[CALLBACK] ERROR:", err.message, err.stack);
-      res.status(500).send("Internal Server Error during callback");
+      console.error("[CALLBACK] ERROR redirecting:", err.message);
+      return res.status(500).send("Failed to redirect");
     }
   }
 );

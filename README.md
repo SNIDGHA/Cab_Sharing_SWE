@@ -1,8 +1,7 @@
 # Carpooling Web App
  This project is a carpooling web application designed to facilitate easy and efficient ride-sharing for users. Built with the MERN stack, it leverages MongoDB for database management, Express.js and Node.js for the backend, and React for the frontend. The application aims to reduce travel costs, decrease traffic congestion, and minimize environmental impact by connecting drivers with empty seats to passengers looking for a ride.  
 
- https://drive.google.com/file/d/1gE3iey66xZyjNwi7omPYT_XgXXxUI-f3/view?usp=sharing
-
+Website Url:-https://cab-sharing-swe-3g3z.vercel.app/
 Features
 User Authentication: Secure signup/login functionality for drivers and passengers.
 Profile Management: Users can create and edit their profiles, including vehicle details for drivers.
